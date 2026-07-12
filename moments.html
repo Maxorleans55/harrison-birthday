@@ -221,31 +221,34 @@
     z-index: 3;
   }
 
-  /* ━━━ SPINNING GLOW RING (shown around photo slides) ━━━ */
-  .photo-frame-ring {
+  /* ━━━ PHOTO BADGE (shown only during photo slides) ━━━ */
+  .photo-badge {
     position: absolute;
-    inset: 16px;
-    border-radius: 28px;
-    padding: 3px;
-    background: conic-gradient(from 0deg, var(--pink), var(--purple), var(--teal), var(--yellow), var(--pink));
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-    mask-composite: exclude;
+    top: 86px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
     z-index: 20;
-    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 20px;
+    border-radius: 999px;
+    background: rgba(26, 15, 51, 0.55);
+    border: 1px solid rgba(255,255,255,0.22);
+    backdrop-filter: blur(10px);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--yellow);
     opacity: 0;
-    transition: opacity 0.6s ease;
-    filter: drop-shadow(0 0 16px rgba(255,111,176,.45));
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
   }
 
-  .photo-frame-ring.show {
+  .photo-badge.show {
     opacity: 1;
-    animation: ringSpin 7s linear infinite;
-  }
-
-  @keyframes ringSpin {
-    to { transform: rotate(360deg); }
+    transform: translateX(-50%) translateY(0);
   }
 
   /* ━━━ SLIDESHOW UI ━━━ */
@@ -369,7 +372,7 @@
   </div>
 
   <div id="slidesContainer"></div>
-  <div class="photo-frame-ring" id="photoFrameRing"></div>
+  <div class="photo-badge" id="photoBadge"><i class="fa-solid fa-camera"></i> Captured Moment</div>
 
   <div class="stage-controls">
     <div class="dots" id="dots"></div>
@@ -529,18 +532,18 @@
     updateDots();
 
     const mediaItem = mediaData[current];
-    const photoFrameRing = document.getElementById('photoFrameRing');
+    const photoBadge = document.getElementById('photoBadge');
     if (mediaItem.type === 'photo') {
       advanceTimer = setTimeout(() => goTo(current + 1), PHOTO_DURATION);
       fadeMusic(0.55);
-      photoFrameRing.classList.add('show');
+      photoBadge.classList.add('show');
     } else {
       const v = incoming.querySelector('video');
       v.muted = muted;
       v.currentTime = 0;
       v.play().catch(() => { /* autoplay blocked; user can tap nav to retry */ });
       fadeMusic(0.08); // duck the song softly under the video's own audio
-      photoFrameRing.classList.remove('show');
+      photoBadge.classList.remove('show');
     }
   }
 
