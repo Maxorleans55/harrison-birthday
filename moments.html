@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🎉 Party Moments — Harrison Oppong</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;700;900&family=Fredoka:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+
+<!-- fireworks-js for the welcome burst -->
+<script src="https://cdn.jsdelivr.net/npm/fireworks-js@2/dist/index.umd.js"></script>
+
+<!-- Font Awesome 6 for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pink:   #ff6fb0;
+    --purple: #a855f7;
+    --yellow: #fde047;
+    --blue:   #60a5fa;
+    --teal:   #14b8a6;
+    --dark:   #0f0722;
+    --card:   #1a0f33;
+    --accent: #ff1493;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  html, body {
+    height: 100%;
+    background: linear-gradient(135deg, var(--dark) 0%, #1a0d2e 50%, var(--dark) 100%);
+    font-family: 'Nunito', sans-serif;
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  /* ━━━ STARFIELD ━━━ */
+  #stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle var(--d) ease-in-out infinite alternate;
+    opacity: 0;
+    box-shadow: 0 0 20px rgba(255,255,255,0.8);
+  }
+  @keyframes twinkle {
+    from { opacity: 0; }
+    to   { opacity: var(--o); }
+  }
+
+  /* ━━━ BACK LINK ━━━ */
+  .back-link {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 60;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: rgba(26, 15, 51, 0.75);
+    border: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .back-link:hover { transform: translateX(-3px); background: rgba(26,15,51,0.95); }
+
+  /* ━━━ WELCOME OVERLAY ━━━ */
+  #welcomeOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  #fireworksCanvas {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+  }
+
+  .welcome-card {
+    position: relative;
+    z-index: 51;
+    background: rgba(26, 15, 51, 0.85);
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(168,85,247,.4);
+    border-radius: 28px;
+    padding: 52px 40px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(168,85,247,.25), 0 0 120px rgba(255,111,176,.1);
+    animation: cardIn .9s cubic-bezier(.22,1,.36,1) both;
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(40px) scale(.95); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .welcome-icon {
+    font-size: 64px;
+    margin-bottom: 14px;
+    display: inline-block;
+    animation: bounce 1.6s ease-in-out infinite;
+    filter: drop-shadow(0 0 18px rgba(253,224,71,.6));
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0) scale(1); }
+    50%     { transform: translateY(-10px) scale(1.08); }
+  }
+
+  .welcome-tag {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: .75rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 10px;
+    opacity: .85;
+    font-weight: 700;
+  }
+
+  .welcome-card h1 {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(1.8rem, 6vw, 2.6rem);
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 50%, var(--teal) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .welcome-card p {
+    color: rgba(255,255,255,0.75);
+    font-size: 1.02rem;
+    line-height: 1.55;
+    margin-bottom: 30px;
+  }
+
+  .enter-btn {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--dark);
+    background: linear-gradient(135deg, var(--yellow), var(--pink));
+    border: none;
+    border-radius: 999px;
+    padding: 16px 36px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 30px -8px rgba(255,111,176,0.6);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .enter-btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 36px -8px rgba(255,111,176,0.75); }
+  .enter-btn:active { transform: translateY(0) scale(0.98); }
+
+  /* ━━━ SLIDESHOW STAGE ━━━ */
+  #slideshowStage {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    opacity: 0;
+    background: #000;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .slide.active { z-index: 2; }
+
+  .slide-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .slide.kenburns .slide-media {
+    animation: kenburns 7s ease-out forwards;
+  }
+  @keyframes kenburns {
+    from { transform: scale(1.12) translate(0,0); }
+    to   { transform: scale(1) translate(0,0); }
+  }
+
+  .slide-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(15,7,34,0.85) 0%, rgba(15,7,34,0.15) 35%, transparent 55%);
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* ━━━ SPINNING GLOW RING (shown around photo slides) ━━━ */
+  .photo-frame-ring {
+    position: absolute;
+    inset: 16px;
+    border-radius: 28px;
+    padding: 3px;
+    background: conic-gradient(from 0deg, var(--pink), var(--purple), var(--teal), var(--yellow), var(--pink));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    z-index: 20;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    filter: drop-shadow(0 0 16px rgba(255,111,176,.45));
+  }
+
+  .photo-frame-ring.show {
+    opacity: 1;
+    animation: ringSpin 7s linear infinite;
+  }
+
+  @keyframes ringSpin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ━━━ SLIDESHOW UI ━━━ */
+  .stage-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    display: flex;
+    justify-content: center;
+    padding: 26px 20px 0;
+  }
+  .stage-title {
+    font-family: 'Pacifico', cursive;
+    font-size: clamp(1.3rem, 4vw, 1.9rem);
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 50%, var(--teal) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.4);
+  }
+
+  .stage-controls {
+    position: absolute;
+    bottom: 28px;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 0 16px;
+  }
+
+  .dots {
+    display: flex;
+    gap: 10px;
+  }
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    cursor: pointer;
+    transition: transform 0.25s ease, background 0.25s ease, width 0.25s ease;
+  }
+  .dot.active {
+    background: linear-gradient(135deg, var(--yellow), var(--pink));
+    width: 26px;
+    border-radius: 6px;
+  }
+
+  .nav-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .nav-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(26,15,51,0.6);
+    backdrop-filter: blur(8px);
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .nav-btn:hover { transform: scale(1.08); background: rgba(168,85,247,0.4); }
+  .nav-btn:active { transform: scale(0.95); }
+
+  .counter {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+    background: rgba(26,15,51,0.6);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 999px;
+    padding: 8px 16px;
+  }
+
+  @media (max-width: 520px) {
+    .nav-row { gap: 12px; }
+    .stage-controls { bottom: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+<a class="back-link" href="index.html"><i class="fa-solid fa-arrow-left"></i> Back</a>
+
+<!-- WELCOME OVERLAY -->
+<div id="welcomeOverlay">
+  <canvas id="fireworksCanvas"></canvas>
+  <div class="welcome-card" id="welcomeCard">
+    <div class="welcome-icon"><i class="fa-solid fa-clapperboard"></i></div>
+    <div class="welcome-tag">Cherished Moments</div>
+    <h1>Relive The Party</h1>
+    <p>Every laugh, every candle, every moment worth remembering — Harrison's birthday, in motion.</p>
+    <button class="enter-btn" id="enterBtn" onclick="enterGallery()">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> Begin the Journey
+    </button>
+  </div>
+</div>
+
+<!-- SLIDESHOW -->
+<div id="slideshowStage">
+  <div class="stage-header">
+    <div class="stage-title">Harrison's Birthday, In Motion</div>
+  </div>
+
+  <div id="slidesContainer"></div>
+  <div class="photo-frame-ring" id="photoFrameRing"></div>
+
+  <div class="stage-controls">
+    <div class="dots" id="dots"></div>
+    <div class="nav-row">
+      <button class="nav-btn" id="prevBtn" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button>
+      <div class="counter" id="counter">1 / 5</div>
+      <button class="nav-btn" id="nextBtn" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button>
+      <button class="nav-btn" id="muteBtn" aria-label="Toggle video sound"><i class="fa-solid fa-volume-high"></i></button>
+      <button class="nav-btn" id="musicBtn" aria-label="Toggle birthday song"><i class="fa-solid fa-music"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- Happy Birthday Song -->
+<audio id="bgMusic" loop style="display:none;">
+  <source src="birthday-song.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+  // ━━━ STARFIELD (matches main page) ━━━
+  const starContainer = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + .5;
+    s.style.cssText = `
+      width:${size}px;height:${size}px;
+      top:${Math.random()*100}%;left:${Math.random()*100}%;
+      --d:${(Math.random()*3+1.5).toFixed(1)}s;
+      --o:${(Math.random()*.8+.2).toFixed(2)};
+      animation-delay:${(Math.random()*4).toFixed(1)}s;
+    `;
+    starContainer.appendChild(s);
+  }
+
+  // ━━━ MEDIA DATA (same footage as the gallery — add new items here) ━━━
+  const mediaData = [
+    { type: 'video', src: 'video_2026-07-11_19-04-29.mp4' },
+    { type: 'photo', src: 'photo_2026-07-11_19-04-52.jpg' },
+    { type: 'video', src: 'video_2026-07-11_19-04-43.mp4' },
+    { type: 'photo', src: 'photo_2026-07-11_19-04-56.jpg' },
+    { type: 'video', src: 'video_2026-07-11_19-04-47.mp4' },
+    { type: 'photo', src: 'photo_2026-07-12_18-53-50.jpg' },
+    { type: 'video', src: 'video_2026-07-12_18-59-24.mp4' },
+    { type: 'video', src: 'video_2026-07-12_19-01-00.mp4' },
+    { type: 'video', src: 'video_2026-07-12_19-01-28.mp4' },
+    { type: 'photo', src: 'photo_2026-07-12_19-07-45.jpg' },
+    { type: 'video', src: 'video_2026-07-12_19-09-26.mp4' },
+    { type: 'photo', src: 'photo_2026-07-12_19-10-25.jpg' },
+    { type: 'video', src: 'video_2026-07-12_19-14-36.mp4' },
+    { type: 'video', src: 'video_2026-07-12_19-16-21.mp4' },
+    { type: 'video', src: 'video_2026-07-12_19-17-19.mp4' },
+  ];
+
+  const PHOTO_DURATION = 5000;
+  let current = 0;
+  let muted = false;
+  let musicMuted = false;
+  let advanceTimer = null;
+  let slideEls = [];
+  let started = false;
+
+  const slidesContainer = document.getElementById('slidesContainer');
+  const dotsContainer = document.getElementById('dots');
+  const counterEl = document.getElementById('counter');
+  const muteBtn = document.getElementById('muteBtn');
+  const musicBtn = document.getElementById('musicBtn');
+  const bgMusic = document.getElementById('bgMusic');
+  bgMusic.volume = 0;
+
+  function fadeMusic(targetVolume, duration = 0.6) {
+    if (musicMuted) return;
+    gsap.to(bgMusic, {
+      volume: targetVolume,
+      duration,
+      ease: 'power1.inOut',
+      onStart: () => { if (targetVolume > 0 && bgMusic.paused) bgMusic.play().catch(() => {}); },
+      onComplete: () => { if (targetVolume === 0) bgMusic.pause(); }
+    });
+  }
+
+  function buildSlides() {
+    mediaData.forEach((m, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'slide';
+
+      let mediaEl;
+      if (m.type === 'photo') {
+        mediaEl = document.createElement('img');
+        mediaEl.src = m.src;
+        mediaEl.alt = 'Birthday party moment';
+      } else {
+        mediaEl = document.createElement('video');
+        mediaEl.src = m.src;
+        mediaEl.playsInline = true;
+        mediaEl.muted = muted;
+        mediaEl.addEventListener('ended', () => goTo(current + 1));
+      }
+      mediaEl.className = 'slide-media';
+      slide.appendChild(mediaEl);
+
+      const scrim = document.createElement('div');
+      scrim.className = 'slide-scrim';
+      slide.appendChild(scrim);
+
+      slidesContainer.appendChild(slide);
+      slideEls.push(slide);
+
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.addEventListener('click', () => goTo(i));
+      dotsContainer.appendChild(dot);
+    });
+  }
+
+  function updateDots() {
+    [...dotsContainer.children].forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  function pauseAllVideos() {
+    slideEls.forEach(s => {
+      const v = s.querySelector('video');
+      if (v) { v.pause(); v.currentTime = 0; }
+    });
+  }
+
+  function goTo(index) {
+    const nextIndex = (index + mediaData.length) % mediaData.length;
+    clearTimeout(advanceTimer);
+
+    const outgoing = slideEls[current];
+    const incoming = slideEls[nextIndex];
+
+    if (outgoing && outgoing !== incoming) {
+      gsap.to(outgoing.querySelector('.slide-media'), {
+        opacity: 0, scale: 1.06, duration: 0.7, ease: 'power2.inOut'
+      });
+      gsap.to(outgoing, { opacity: 0, duration: 0.7, ease: 'power2.inOut', onComplete: () => {
+        outgoing.classList.remove('active', 'kenburns');
+        const v = outgoing.querySelector('video');
+        if (v) { v.pause(); v.currentTime = 0; }
+      }});
+    }
+
+    current = nextIndex;
+    incoming.classList.add('active');
+    gsap.fromTo(incoming, { opacity: 0 }, { opacity: 1, duration: 0.7, ease: 'power2.inOut' });
+    gsap.fromTo(incoming.querySelector('.slide-media'),
+      { opacity: 0, scale: 1.15 },
+      { opacity: 1, scale: 1, duration: 0.9, ease: 'power2.out' }
+    );
+
+    void incoming.offsetWidth; // restart kenburns animation
+    incoming.classList.add('kenburns');
+
+    counterEl.textContent = `${current + 1} / ${mediaData.length}`;
+    updateDots();
+
+    const mediaItem = mediaData[current];
+    const photoFrameRing = document.getElementById('photoFrameRing');
+    if (mediaItem.type === 'photo') {
+      advanceTimer = setTimeout(() => goTo(current + 1), PHOTO_DURATION);
+      fadeMusic(0.55);
+      photoFrameRing.classList.add('show');
+    } else {
+      const v = incoming.querySelector('video');
+      v.muted = muted;
+      v.currentTime = 0;
+      v.play().catch(() => { /* autoplay blocked; user can tap nav to retry */ });
+      fadeMusic(0.08); // duck the song softly under the video's own audio
+      photoFrameRing.classList.remove('show');
+    }
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+  muteBtn.addEventListener('click', () => {
+    muted = !muted;
+    muteBtn.innerHTML = muted
+      ? '<i class="fa-solid fa-volume-xmark"></i>'
+      : '<i class="fa-solid fa-volume-high"></i>';
+    slideEls.forEach(s => {
+      const v = s.querySelector('video');
+      if (v) v.muted = muted;
+    });
+  });
+
+  musicBtn.addEventListener('click', () => {
+    musicMuted = !musicMuted;
+    musicBtn.innerHTML = musicMuted
+      ? '<i class="fa-solid fa-volume-xmark"></i>'
+      : '<i class="fa-solid fa-music"></i>';
+    if (musicMuted) {
+      gsap.killTweensOf(bgMusic);
+      bgMusic.volume = 0;
+      bgMusic.pause();
+    } else {
+      const mediaItem = mediaData[current];
+      fadeMusic(mediaItem.type === 'photo' ? 0.55 : 0.08);
+    }
+  });
+
+  // ━━━ WELCOME → SLIDESHOW TRANSITION ━━━
+  function enterGallery() {
+    if (started) return;
+    started = true;
+
+    const canvas = document.getElementById('fireworksCanvas');
+    let fw = null;
+    if (typeof Fireworks !== 'undefined') {
+      fw = new Fireworks.default(canvas, {
+        rocketsPoint: { min: 40, max: 60 },
+        hue: { min: 300, max: 340 },
+        acceleration: 1.02,
+        friction: 0.97,
+        gravity: 1.4,
+        particles: 70,
+        explosion: 6,
+        intensity: 22,
+        flickering: 40,
+        lineWidth: { explosion: { min: 1, max: 3 }, trace: { min: 1, max: 2 } },
+        brightness: { min: 60, max: 80 },
+        opacity: 0.6,
+      });
+      fw.start();
+    }
+
+    buildSlides();
+
+    gsap.to('#welcomeCard', { opacity: 0, y: -20, scale: 0.94, duration: 0.6, ease: 'power2.in' });
+    gsap.to('#welcomeOverlay', { opacity: 0, duration: 0.8, delay: 0.35, onComplete: () => {
+      document.getElementById('welcomeOverlay').style.display = 'none';
+      if (fw) fw.stop();
+    }});
+
+    gsap.to('#slideshowStage', { opacity: 1, duration: 0.9, delay: 0.4, ease: 'power2.out' });
+
+    setTimeout(() => goTo(0), 500);
+  }
+</script>
+
+</body>
+</html>

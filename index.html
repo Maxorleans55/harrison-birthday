@@ -172,12 +172,14 @@
 
     /* ━━━ TYPOGRAPHY ━━━ */
     .tag {
+      font-family: 'Space Grotesk', sans-serif;
       font-size: .75rem;
       letter-spacing: .2em;
       text-transform: uppercase;
       color: var(--pink);
       margin-bottom: 8px;
       opacity: .8;
+      font-weight: 600;
       animation: slideInDown 0.8s ease-out 0.2s both;
     }
 
@@ -521,6 +523,7 @@
       opacity: 0;
       transition: all .3s ease-out;
       border-radius: 20px;
+      z-index: 3;
     }
 
     .media-item:hover .media-overlay {
@@ -547,6 +550,42 @@
     }
 
     .media-item:has(img) .play-btn { display: none; }
+
+    /* ━━━ SPINNING GLOW RING (photo items) ━━━ */
+    .media-item.photo-ring {
+      overflow: visible;
+      border: none;
+      background: none;
+    }
+
+    .ring-spin {
+      position: absolute;
+      inset: -6px;
+      border-radius: 24px;
+      padding: 3px;
+      background: conic-gradient(from 0deg, var(--pink), var(--purple), var(--teal), var(--yellow), var(--pink));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      animation: ringSpin 4s linear infinite;
+      z-index: 1;
+      pointer-events: none;
+      filter: drop-shadow(0 0 8px rgba(255,111,176,.45));
+    }
+
+    @keyframes ringSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .media-frame {
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      overflow: hidden;
+      z-index: 2;
+      background: rgba(168, 85, 247, 0.1);
+    }
 
     /* ━━━ MODAL ━━━ */
     .modal {
@@ -818,8 +857,8 @@
         <button class="btn" onclick="celebrateNow()">
           <span>🕯️</span> Make a Wish
         </button>
-        <button class="btn" onclick="surpriseMe()">
-          <span>🎇</span> Surprise Me!
+        <button class="btn" onclick="window.location.href='moments.html'">
+          <i class="fa-solid fa-video"></i> Birthday Party Moments
         </button>
       </div>
     </div>
@@ -1040,6 +1079,16 @@
     { type: 'video', src: 'video_2026-07-11_19-04-43.mp4' },
     { type: 'photo', src: 'photo_2026-07-11_19-04-56.jpg' },
     { type: 'video', src: 'video_2026-07-11_19-04-47.mp4' },
+    { type: 'photo', src: 'photo_2026-07-12_18-53-50.jpg' },
+    { type: 'video', src: 'video_2026-07-12_18-59-24.mp4' },
+    { type: 'video', src: 'video_2026-07-12_19-01-00.mp4' },
+    { type: 'video', src: 'video_2026-07-12_19-01-28.mp4' },
+    { type: 'photo', src: 'photo_2026-07-12_19-07-45.jpg' },
+    { type: 'video', src: 'video_2026-07-12_19-09-26.mp4' },
+    { type: 'photo', src: 'photo_2026-07-12_19-10-25.jpg' },
+    { type: 'video', src: 'video_2026-07-12_19-14-36.mp4' },
+    { type: 'video', src: 'video_2026-07-12_19-16-21.mp4' },
+    { type: 'video', src: 'video_2026-07-12_19-17-19.mp4' },
   ];
 
   const mediaGrid = document.getElementById('mediaGrid');
@@ -1048,11 +1097,21 @@
     item.className = 'media-item';
 
     if (media.type === 'photo') {
+      item.classList.add('photo-ring');
+
+      const ring = document.createElement('div');
+      ring.className = 'ring-spin';
+      item.appendChild(ring);
+
+      const frame = document.createElement('div');
+      frame.className = 'media-frame';
+
       const img = document.createElement('img');
       img.className = 'media-content';
       img.src = media.src;
       img.alt = 'Birthday moment';
-      item.appendChild(img);
+      frame.appendChild(img);
+      item.appendChild(frame);
     } else {
       const video = document.createElement('video');
       video.className = 'media-content';
@@ -1418,26 +1477,6 @@
     });
   }
 
-  // ━━━ SURPRISE ME BUTTON (full combo) ━━━
-  function surpriseMe() {
-    gsap.timeline()
-      .to('.card', { y: -14, rotation: -2, duration: 0.15, yoyo: true, repeat: 3, ease: 'power1.inOut' });
-
-    runFireworks(6000);
-    confettiCannons(2200);
-    launchConfetti();
-
-    if (typeof tsParticles !== 'undefined') {
-      tsParticles.confetti({ count: 140, spread: 90, origin: { y: 0.25 } });
-    }
-
-    document.querySelectorAll('.balloon').forEach((b, i) => {
-      gsap.to(b, { y: -30, duration: 0.4, delay: i * 0.05, yoyo: true, repeat: 3, ease: 'sine.inOut' });
-    });
-
-    const btn = event.target.closest('.btn');
-    gsap.to(btn, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 });
-  }
 </script>
 </body>
 </html>
