@@ -203,6 +203,27 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Blurred backdrop clone — fills the frame behind the real media so
+     portrait photos/videos don't get cropped tight on wide desktop screens */
+  .slide-media-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(50px) brightness(0.5) saturate(1.2);
+    transform: scale(1.15);
+    z-index: 0;
+  }
+
+  @media (min-width: 700px) {
+    .slide-media {
+      object-fit: contain;
+    }
   }
 
   .slide.kenburns .slide-media {
@@ -386,9 +407,9 @@
   </div>
 </div>
 
-<!-- Happy Birthday Song -->
+<!-- Happy Birthday Song (different from the one on index.html) -->
 <audio id="bgMusic" loop style="display:none;">
-  <source src="birthday-song.mp3" type="audio/mpeg">
+  <source src="moments-song.mp3" type="audio/mpeg">
 </audio>
 
 <script>
@@ -459,19 +480,33 @@
       const slide = document.createElement('div');
       slide.className = 'slide';
 
-      let mediaEl;
+      let mediaEl, bgEl;
       if (m.type === 'photo') {
         mediaEl = document.createElement('img');
         mediaEl.src = m.src;
         mediaEl.alt = 'Birthday party moment';
+
+        bgEl = document.createElement('img');
+        bgEl.src = m.src;
+        bgEl.alt = '';
+        bgEl.setAttribute('aria-hidden', 'true');
       } else {
         mediaEl = document.createElement('video');
         mediaEl.src = m.src;
         mediaEl.playsInline = true;
         mediaEl.muted = muted;
         mediaEl.addEventListener('ended', () => goTo(current + 1));
+
+        bgEl = document.createElement('video');
+        bgEl.src = m.src;
+        bgEl.playsInline = true;
+        bgEl.muted = true;
+        bgEl.loop = true;
+        bgEl.setAttribute('aria-hidden', 'true');
       }
       mediaEl.className = 'slide-media';
+      bgEl.className = 'slide-media-bg';
+      slide.appendChild(bgEl);
       slide.appendChild(mediaEl);
 
       const scrim = document.createElement('div');
@@ -494,8 +529,7 @@
 
   function pauseAllVideos() {
     slideEls.forEach(s => {
-      const v = s.querySelector('video');
-      if (v) { v.pause(); v.currentTime = 0; }
+      s.querySelectorAll('video').forEach(v => { v.pause(); v.currentTime = 0; });
     });
   }
 
@@ -512,8 +546,7 @@
       });
       gsap.to(outgoing, { opacity: 0, duration: 0.7, ease: 'power2.inOut', onComplete: () => {
         outgoing.classList.remove('active', 'kenburns');
-        const v = outgoing.querySelector('video');
-        if (v) { v.pause(); v.currentTime = 0; }
+        outgoing.querySelectorAll('video').forEach(v => { v.pause(); v.currentTime = 0; });
       }});
     }
 
@@ -538,10 +571,12 @@
       fadeMusic(0.55);
       photoBadge.classList.add('show');
     } else {
-      const v = incoming.querySelector('video');
+      const v = incoming.querySelector('video.slide-media');
+      const bgV = incoming.querySelector('video.slide-media-bg');
       v.muted = muted;
       v.currentTime = 0;
       v.play().catch(() => { /* autoplay blocked; user can tap nav to retry */ });
+      if (bgV) { bgV.currentTime = 0; bgV.play().catch(() => {}); }
       fadeMusic(0.08); // duck the song softly under the video's own audio
       photoBadge.classList.remove('show');
     }
