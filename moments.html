@@ -83,6 +83,44 @@
   }
   .back-link:hover { transform: translateX(-3px); background: rgba(26,15,51,0.95); }
 
+  /* ━━━ CAPTURED MOMENTS BADGE (top-right, over the slideshow) ━━━ */
+  .moments-badge {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 60;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    color: var(--dark);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    background: linear-gradient(135deg, var(--yellow) 0%, var(--pink) 55%, var(--teal) 100%);
+    box-shadow: 0 6px 22px -4px rgba(255,111,176,0.55);
+    overflow: hidden;
+  }
+  .moments-badge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+    transform: translateX(-100%);
+    animation: shine 3.5s infinite;
+  }
+  .moments-badge i, .moments-badge span { position: relative; }
+
+  @keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  @media (max-width: 520px) {
+    .moments-badge { padding: 9px 16px; font-size: 0.8rem; gap: 6px; }
+  }
+
   /* ━━━ WELCOME OVERLAY ━━━ */
   #welcomeOverlay {
     position: fixed;
@@ -371,6 +409,7 @@
 
 <div id="stars"></div>
 <a class="back-link" href="index.html"><i class="fa-solid fa-arrow-left"></i> Back</a>
+<div class="moments-badge"><i class="fa-solid fa-camera-retro"></i> <span>Captured Moments</span></div>
 
 <!-- WELCOME OVERLAY -->
 <div id="welcomeOverlay">
@@ -614,6 +653,13 @@
   function enterGallery() {
     if (started) return;
     started = true;
+
+    // Start audio synchronously inside this click handler — this is the
+    // one moment browsers reliably count as "user gesture" for autoplay.
+    // Any play() call made later (e.g. inside a setTimeout) can get blocked
+    // by Safari/iOS even though it was triggered by the same click.
+    bgMusic.volume = 0;
+    bgMusic.play().catch(() => { /* still blocked; user can tap the music icon */ });
 
     const canvas = document.getElementById('fireworksCanvas');
     let fw = null;
